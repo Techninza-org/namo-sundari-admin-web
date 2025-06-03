@@ -1,5 +1,3 @@
-
-   
 import { useState, useEffect, useCallback } from "react";
 import {
   Button,
@@ -22,101 +20,103 @@ function Transaction() {
   const [totalPages, setTotalPages] = useState(1);
   const token = Cookies.get("token");
 
-  const fetchTransactions = useCallback(async (page) => {
-    if (!token) return;
-    setLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/admin/get-all-transactions?limit=10&page=${page}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
-      console.log("transactions", data.data);
-      setTransactions(data.data);
-      // Since your API doesn't return pagination info, calculate pages based on data length
-      // You might need to adjust this based on your actual pagination implementation
-      setTotalPages(Math.ceil(data.data.length / 10) || 1);
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+  const fetchTransactions = useCallback(
+    async (page) => {
+      if (!token) return;
+      setLoading(true);
+      try {
+        const { data } = await axios.get(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/admin/get-all-transactions?limit=10&page=${page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          }
+        );
+        console.log("transactions", data.data);
+        setTransactions(data.data);
+        // Calculate total pages assuming API doesn't send pagination info
+        setTotalPages(Math.ceil(data.data.length / 10) || 1);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
 
   useEffect(() => {
     if (token) fetchTransactions(currentPage);
   }, [token, currentPage, fetchTransactions]);
 
-  // Updated status mapping for string values
+  // Status color helper
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case 'success':
-        return 'text-green-500';
-      case 'pending':
-        return 'text-yellow-500';
-      case 'failed':
-        return 'text-red-500';
+      case "success":
+        return "text-green-500";
+      case "pending":
+        return "text-yellow-500";
+      case "failed":
+        return "text-red-500";
       default:
-        return 'text-gray-500';
+        return "text-gray-500";
     }
   };
 
   const columns = [
-    { 
-      key: "id", 
-      label: "Transaction ID", 
-      render: (row) => <div>{row.id}</div>, 
-      width: "w-32" 
+    {
+      key: "sno",
+      label: "S.No.",
+      render: (row) =>
+        (currentPage - 1) * 10 +
+        transactions.findIndex((t) => t.id === row.id) +
+        1,
+      width: "w-20",
     },
-    { 
-      key: "userId", 
-      label: "User ID", 
-      render: (row) => <div>{row.userId}</div>, 
-      width: "w-32" 
+    {
+      key: "order_id",
+      label: "Order ID",
+      render: (row) => <div>{row.order_id}</div>,
+      width: "w-40",
     },
-    { 
-      key: "order_id", 
-      label: "Order ID", 
-      render: (row) => <div>{row.order_id}</div>, 
-      width: "w-40" 
+    {
+      key: "amount",
+      label: "Amount",
+      render: (row) => <div>₹{row.amount}</div>,
+      width: "w-32",
     },
-    { 
-      key: "amount", 
-      label: "Amount", 
-      render: (row) => <div>₹{row.amount}</div>, 
-      width: "w-32" 
+    {
+      key: "payment_id",
+      label: "Payment ID",
+      render: (row) => <div className="truncate">{row.payment_id}</div>,
+      width: "w-40",
     },
-    { 
-      key: "payment_id", 
-      label: "Payment ID", 
-      render: (row) => <div className="truncate">{row.payment_id}</div>, 
-      width: "w-40" 
+    {
+      key: "product_id",
+      label: "Product ID",
+      render: (row) => <div>{row.product_id}</div>,
+      width: "w-32",
     },
-    { 
-      key: "product_id", 
-      label: "Product ID", 
-      render: (row) => <div>{row.product_id}</div>, 
-      width: "w-32" 
-    },
-    { 
-      key: "status", 
-      label: "Status", 
+    {
+      key: "status",
+      label: "Status",
       render: (row) => (
-        <div className={`font-semibold capitalize ${getStatusColor(row.status)}`}>
+        <div
+          className={`font-semibold capitalize ${getStatusColor(row.status)}`}>
           {row.status}
         </div>
-      ), 
-      width: "w-32" 
+      ),
+      width: "w-32",
     },
-    { 
-      key: "createdAt", 
-      label: "Created At", 
-      render: (row) => <div>{new Date(row.createdAt).toLocaleString()}</div>, 
-      width: "w-60" 
+    {
+      key: "createdAt",
+      label: "Created At",
+      render: (row) => <div>{new Date(row.createdAt).toLocaleString()}</div>,
+      width: "w-60",
     },
   ];
 
@@ -148,8 +148,7 @@ function Transaction() {
       <CardFooter className="flex justify-between">
         <Button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
+          disabled={currentPage === 1}>
           Previous
         </Button>
 
@@ -159,8 +158,7 @@ function Transaction() {
               <IconButton
                 variant="text"
                 size="sm"
-                onClick={() => setCurrentPage(1)}
-              >
+                onClick={() => setCurrentPage(1)}>
                 1
               </IconButton>
               {currentPage > 4 && <p>...</p>}
@@ -175,8 +173,7 @@ function Transaction() {
                 variant="text"
                 size="sm"
                 onClick={() => setCurrentPage(page)}
-                disabled={currentPage === page}
-              >
+                disabled={currentPage === page}>
                 {page}
               </IconButton>
             );
@@ -187,8 +184,7 @@ function Transaction() {
               <IconButton
                 variant="text"
                 size="sm"
-                onClick={() => setCurrentPage(totalPages)}
-              >
+                onClick={() => setCurrentPage(totalPages)}>
                 {totalPages}
               </IconButton>
             </>
@@ -199,8 +195,7 @@ function Transaction() {
           onClick={() =>
             setCurrentPage((prev) => Math.min(prev + 1, totalPages))
           }
-          disabled={currentPage === totalPages}
-        >
+          disabled={currentPage === totalPages}>
           Next
         </Button>
       </CardFooter>

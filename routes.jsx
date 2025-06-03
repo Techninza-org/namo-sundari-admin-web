@@ -39,7 +39,7 @@ export const routes = [
 
       {
         icon: <ArchiveBoxArrowDownIcon className={iconClass} />,
-        name: "All Users",
+        name: "All Customers",
         path: "/all-users", // Fixed path
         element: (
           <PrivateRoute>
@@ -48,33 +48,33 @@ export const routes = [
         ),
       },
 
-      {
-        icon: <UsersIcon className={iconClass} />,
-        name: "All Vendors",
-        path: "/vendor", // Main path for "All Users" without any element
-        subPages: [
-          {
-            name: "Vendors",
-            path: "/vendor/all",
-            element: (
-              <PrivateRoute>
-                {" "}
-                <Vendors />
-              </PrivateRoute>
-            ),
-          },
-          {
-            name: "Panding Vendors",
-            path: "/vendor/panding",
-            element: (
-              <PrivateRoute>
-                {" "}
-                <PandingVendors />
-              </PrivateRoute>
-            ),
-          },
-        ],
-      },
+      // {
+      //   icon: <UsersIcon className={iconClass} />,
+      //   name: "All Vendors",
+      //   path: "/vendor", // Main path for "All Users" without any element
+      //   subPages: [
+      //     {
+      //       name: "Active Vendors",
+      //       path: "/vendor/all",
+      //       element: (
+      //         <PrivateRoute>
+      //           {" "}
+      //           <Vendors />
+      //         </PrivateRoute>
+      //       ),
+      //     },
+      //     {
+      //       name: "Panding Vendors",
+      //       path: "/vendor/panding",
+      //       element: (
+      //         <PrivateRoute>
+      //           {" "}
+      //           <PandingVendors />
+      //         </PrivateRoute>
+      //       ),
+      //     },
+      //   ],
+      // },
 
       {
         icon: <UsersIcon className={iconClass} />,
@@ -130,7 +130,7 @@ export const routes = [
           //   element: (
           //     <PrivateRoute>
           //       {" "}
-               
+
           //     </PrivateRoute>
           //   ),
           // },
@@ -159,7 +159,7 @@ export const routes = [
           </PrivateRoute>
         ),
       },
-            {
+      {
         icon: <TicketIcon className={iconClass} />,
         name: "Setting",
         path: "/setting", // Fixed path

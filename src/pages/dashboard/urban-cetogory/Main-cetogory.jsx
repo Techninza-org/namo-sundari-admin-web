@@ -85,8 +85,9 @@ const MainCategory = () => {
       );
 
       showSuccessToast("Category added successfully");
-      fetchLeads(); // Refresh table
+      fetchLeads();
       setMainCategory("");
+      setDescription("");
       setImage(null);
     } catch (error) {
       console.error("Error submitting category:", error);
@@ -123,7 +124,6 @@ const MainCategory = () => {
   };
 
   const handleDelete = async (id) => {
-    console.log(id, "id");
     const token = Cookies.get("token");
     if (!token) {
       console.error("No token found. User may not be authenticated.");
@@ -131,11 +131,8 @@ const MainCategory = () => {
     }
 
     try {
-      console.log(token, id, "i");
-
       await axios.delete(
         `${import.meta.env.VITE_BASE_URL}/admin/delete-main-category/${id}`,
-
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -151,6 +148,11 @@ const MainCategory = () => {
   };
 
   const columns = [
+    {
+      key: "index",
+      label: "S.No.",
+      render: (row) => row.index,
+    },
     {
       key: "imgUrl",
       label: "Image",
@@ -172,7 +174,6 @@ const MainCategory = () => {
       label: "Description",
       render: (row) => row.description,
     },
-
     {
       key: "status",
       label: "Status",
@@ -211,7 +212,7 @@ const MainCategory = () => {
           </Typography>
           <CardBody className="space-y-4">
             <Input
-              label=" Enter Main Category"
+              label="Enter Main Category"
               value={mainCategory}
               onChange={(e) => setMainCategory(e.target.value)}
               className="w-full"
@@ -242,8 +243,7 @@ const MainCategory = () => {
             <Button
               onClick={handleCouponSubmit}
               disabled={loadigSubmit}
-              className="w-full"
-            >
+              className="w-full">
               {loadigSubmit ? <Spinner className="h-5 w-5" /> : "Add Category"}
             </Button>
           </CardFooter>
@@ -260,17 +260,24 @@ const MainCategory = () => {
                 <Spinner className="h-8 w-8 text-blue-500" />
               </div>
             ) : (
-              <CustomTable columns={columns} data={leads} />
+              <CustomTable
+                columns={columns}
+                data={leads.map((item, idx) => ({
+                  ...item,
+                  index: idx + 1,
+                }))}
+              />
             )}
           </CardBody>
         </Card>
+
         <UpdateMainCategory
           open={editDialogOpen}
           handleOpen={() => setEditDialogOpen(false)}
           categoryData={selectedCategory}
           onUpdateSuccess={() => {
             setEditDialogOpen(false);
-            fetchLeads(); // Refresh the table after update
+            fetchLeads();
           }}
         />
       </div>

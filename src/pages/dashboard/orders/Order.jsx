@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect, useCallback } from "react";
 import {
   Button,
@@ -20,11 +18,11 @@ import { useNavigate } from "react-router-dom";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 function Order() {
-  const [orders, setOrders] = useState([]); // Changed from vendors to orders
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [error, setError] = useState(null); // Added error state
+  const [error, setError] = useState(null);
   const token = Cookies.get("token");
   const navigate = useNavigate();
 
@@ -33,7 +31,7 @@ function Order() {
       if (!token) return;
 
       setLoading(true);
-      setError(null); // Reset error
+      setError(null);
       try {
         const { data } = await axios.get(
           `${
@@ -46,25 +44,31 @@ function Order() {
             },
           }
         );
-        
-        // Handle different response structures
+
         if (data && data.data) {
-          // If response has the expected structure with pagination
-          setOrders(data.data);
+          // Add index to each order based on pagination
+          const ordersWithIndex = data.data.map((order, index) => ({
+            ...order,
+            index: (page - 1) * 10 + index + 1,
+          }));
+          setOrders(ordersWithIndex);
           setTotalPages(data.pagination?.total_pages || 1);
         } else if (Array.isArray(data)) {
-          // If response is directly an array (like in your example)
-          setOrders(data);
-          setTotalPages(1); // Set to 1 since we don't have pagination info
+          // Add index if response is direct array
+          const ordersWithIndex = data.map((order, index) => ({
+            ...order,
+            index: index + 1,
+          }));
+          setOrders(ordersWithIndex);
+          setTotalPages(1);
         } else {
-          // Set empty array as fallback
           setOrders([]);
           setTotalPages(1);
         }
       } catch (error) {
         console.error("Error fetching orders:", error);
         setError("Failed to fetch orders. Please try again.");
-        setOrders([]); // Set empty array on error
+        setOrders([]);
         setTotalPages(1);
       } finally {
         setLoading(false);
@@ -80,7 +84,7 @@ function Order() {
   const deleteOrder = async (id) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_BASE_URL}/admin/delete-order/${id}`, // Updated endpoint
+        `${import.meta.env.VITE_BASE_URL}/admin/delete-order/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -98,7 +102,13 @@ function Order() {
 
   const columns = [
     {
-      key: "id", // Changed from order_id to id
+      key: "index",
+      label: "S.No.",
+      render: (row) => <div>{row.index}</div>,
+      width: "w-12",
+    },
+    {
+      key: "id",
       label: "Order ID",
       render: (row) => <div>{row.id || "N/A"}</div>,
       width: "w-60",
@@ -106,63 +116,58 @@ function Order() {
     {
       key: "user_name",
       label: "Name",
-      render: (row) => <div>{row.user?.name || "N/A"}</div>, 
+      render: (row) => <div>{row.user?.name || "N/A"}</div>,
       width: "w-48",
     },
-     {
-    key: "createdAt",
-    label: "Order Date",
-    render: (row) => (
-      <div>
-        {row.createdAt 
-          ? new Date(row.createdAt).toLocaleDateString() 
-          : "N/A"}
-      </div>
-    ),
-    width: "w-40",
-  },
     {
-  key: "orderStatus",
-  label: "Order Status",
-  render: (row) => {
-    // Determine color based on status
-    let textColorClass = "text-gray-700"; // Default color
-    
-    if (row.orderStatus === "SUCCESS") {
-      textColorClass = "text-green-500 font-medium";
-    } else if (row.orderStatus === "FAILED") {
-      textColorClass = "text-red-500 font-medium";
-    }
-    
-    return <div className={textColorClass}>{row.orderStatus || "N/A"}</div>;
-  },
-  width: "w-36",
-},
-  
+      key: "createdAt",
+      label: "Order Date",
+      render: (row) => (
+        <div>
+          {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "N/A"}
+        </div>
+      ),
+      width: "w-40",
+    },
+    {
+      key: "orderStatus",
+      label: "Order Status",
+      render: (row) => {
+        let textColorClass = "text-gray-700";
+
+        if (row.orderStatus === "SUCCESS") {
+          textColorClass = "text-green-500 font-medium";
+        } else if (row.orderStatus === "FAILED") {
+          textColorClass = "text-red-500 font-medium";
+        }
+
+        return <div className={textColorClass}>{row.orderStatus || "N/A"}</div>;
+      },
+      width: "w-36",
+    },
     {
       key: "total_amount",
       label: "Total Amount",
       render: (row) => <div>{row.totalAmount || "N/A"}</div>,
       width: "w-32",
     },
-   {
-  key: "items_count",
-  label: "Items Total",
-  render: (row) => {
-    // Calculate total quantity of all items in the order
-    const totalItems = row.orderItems?.reduce((sum, item) => {
-      return sum + (item.quantity || 0);
-    }, 0) || 0;
-    
-    return <div>{totalItems}</div>;
-  },
-  width: "w-32",
-},
+    {
+      key: "items_count",
+      label: "Items Total",
+      render: (row) => {
+        const totalItems =
+          row.orderItems?.reduce((sum, item) => {
+            return sum + (item.quantity || 0);
+          }, 0) || 0;
+
+        return <div>{totalItems}</div>;
+      },
+      width: "w-32",
+    },
     {
       key: "status",
       label: "Status",
       render: (row) => {
-        // Updated status mapping based on your API response
         const getStatus = (status) => {
           switch (status) {
             case "CONFIRMED":
@@ -181,8 +186,7 @@ function Order() {
               return "Unknown";
           }
         };
-        
-        // Calculate progress based on status
+
         const getProgress = (status) => {
           switch (status) {
             case "CONFIRMED":
@@ -199,15 +203,14 @@ function Order() {
               return { value: 0, color: "gray" };
           }
         };
-        
+
         const progress = getProgress(row.status);
-        
+
         return (
           <div className="w-10/12">
             <Typography
               variant="small"
-              className="mb-1 block text-xs font-medium text-blue-gray-600"
-            >
+              className="mb-1 block text-xs font-medium text-blue-gray-600">
               {getStatus(row.status)}
             </Typography>
             <Progress
@@ -278,8 +281,7 @@ function Order() {
       <CardFooter className="flex justify-between">
         <Button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
+          disabled={currentPage === 1}>
           Previous
         </Button>
 
@@ -289,8 +291,7 @@ function Order() {
               <IconButton
                 variant="text"
                 size="sm"
-                onClick={() => setCurrentPage(1)}
-              >
+                onClick={() => setCurrentPage(1)}>
                 1
               </IconButton>
               {currentPage > 4 && <p>...</p>}
@@ -306,8 +307,7 @@ function Order() {
                 variant="text"
                 size="sm"
                 onClick={() => setCurrentPage(page)}
-                disabled={currentPage === page}
-              >
+                disabled={currentPage === page}>
                 {page}
               </IconButton>
             );
@@ -319,8 +319,7 @@ function Order() {
               <IconButton
                 variant="text"
                 size="sm"
-                onClick={() => setCurrentPage(totalPages)}
-              >
+                onClick={() => setCurrentPage(totalPages)}>
                 {totalPages}
               </IconButton>
             </>
@@ -331,8 +330,7 @@ function Order() {
           onClick={() =>
             setCurrentPage((prev) => Math.min(prev + 1, totalPages))
           }
-          disabled={currentPage === totalPages}
-        >
+          disabled={currentPage === totalPages}>
           Next
         </Button>
       </CardFooter>

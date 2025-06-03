@@ -13,9 +13,8 @@ import {
 import axios from "axios";
 import Cookies from "js-cookie";
 import CustomTable from "../../../components/CustomTable";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
-
 import AddCustomBid from "./addCustomBid";
 import { ViewIcon } from "lucide-react";
 
@@ -27,39 +26,29 @@ function Users() {
   const token = Cookies.get("token");
   const [open, setOpen] = useState(false);
   const [bidId, setBidId] = useState(null);
-  
 
-
-  const handleOpen = (id,projectTitle,min,max) =>{
-
-    const bids ={
-      id:id,
-      projectTitle:projectTitle,
-      min:min,
-      max:max
-    }
-
+  const handleOpen = (id, projectTitle, min, max) => {
+    const bids = {
+      id: id,
+      projectTitle: projectTitle,
+      min: min,
+      max: max,
+    };
     setOpen(!open);
     setBidId(bids);
-   
+  };
 
-  } 
-  
-
-
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   const fetchLeads = useCallback(
     async (page) => {
       if (!token) return;
-  
-  
-  
       setLoading(true);
       try {
         const { data } = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/admin/all-users?page=${page}&limit=10`,
-         
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/admin/all-users?page=${page}&limit=10`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -67,7 +56,6 @@ function Users() {
             },
           }
         );
-        console.log("leads", data.users);
         setLeads(data.users);
         setTotalPages(data.pagination.totalPages);
       } catch (error) {
@@ -78,12 +66,10 @@ function Users() {
     },
     [token]
   );
-  
+
   useEffect(() => {
     if (token) fetchLeads(currentPage);
   }, [token, currentPage, fetchLeads]);
-
-  
 
   const deleteLead = async (id) => {
     try {
@@ -97,49 +83,38 @@ function Users() {
   };
 
   const handleEdit = (id) => {
-    navigate(`/user-detail/${id}`); // Redirect to detail page with ID
+    navigate(`/user-detail/${id}`);
   };
-  const handleOrder = (id) => {
-    navigate(`/user-order/${id}`); // Redirect to order page with ID
 
+  const handleOrder = (id) => {
+    navigate(`/user-order/${id}`);
   };
+
+  // Add numbering to the data before passing to CustomTable
+  const numberedLeads = leads.map((lead, index) => ({
+    ...lead,
+    rowNumber: (currentPage - 1) * 10 + index + 1,
+  }));
 
   const columns = [
-    // {
-    //   key: "profile_img",
-    //   label: "Profile",
-    //   render: (row) => (
-    //     <div className="w-10 h-10 rounded-full overflow-hidden">
-    //       {row.profile_img ? (
-    //         <img
-    //           src={`${import.meta.env.VITE_BASE_URL_IMAGE}${row.profile_img}`}
-    //           alt="Profile"
-    //           className="object-cover w-full h-full"
-    //         />
-    //       ) : (
-    //         <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
-    //           N/A
-    //         </div>
-    //       )}
-    //     </div>
-    //   ),
-    //   width: "w-20",
-    // },
+    {
+      key: "rowNumber",
+      label: "S.No.",
+      render: (row) => <div>{row.rowNumber}</div>,
+      width: "w-12",
+    },
     {
       key: "name",
       label: "Name",
       render: (row) => <div>{row.name || "N/A"}</div>,
       width: "w-48",
     },
-   
     {
       key: "email",
       label: "Email",
       render: (row) => <div>{row.email || "N/A"}</div>,
       width: "w-60",
     },
-   
-   
     {
       key: "actions",
       label: "Order",
@@ -150,7 +125,6 @@ function Users() {
               <ViewIcon className="h-5 w-5 text-blue-500" />
             </button>
           </Tooltip>
-         
         </div>
       ),
       width: "w-28",
@@ -175,7 +149,6 @@ function Users() {
       width: "w-28",
     },
   ];
-  
 
   return (
     <Card>
@@ -189,7 +162,6 @@ function Users() {
               View the current active Users
             </Typography>
           </div>
-          {/* <Button variant="gradient">Add New Lead</Button> */}
         </div>
       </CardHeader>
 
@@ -199,16 +171,14 @@ function Users() {
             <Spinner className="h-8 w-8 text-blue-500" />
           </div>
         ) : (
-          <CustomTable columns={columns} data={leads} />
-          
+          <CustomTable columns={columns} data={numberedLeads} />
         )}
       </CardBody>
 
       <CardFooter className="flex justify-between">
         <Button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
+          disabled={currentPage === 1}>
           Previous
         </Button>
 
@@ -218,8 +188,7 @@ function Users() {
               <IconButton
                 variant="text"
                 size="sm"
-                onClick={() => setCurrentPage(1)}
-              >
+                onClick={() => setCurrentPage(1)}>
                 1
               </IconButton>
               {currentPage > 4 && <p>...</p>}
@@ -235,8 +204,7 @@ function Users() {
                 variant="text"
                 size="sm"
                 onClick={() => setCurrentPage(page)}
-                disabled={currentPage === page}
-              >
+                disabled={currentPage === page}>
                 {page}
               </IconButton>
             );
@@ -248,8 +216,7 @@ function Users() {
               <IconButton
                 variant="text"
                 size="sm"
-                onClick={() => setCurrentPage(totalPages)}
-              >
+                onClick={() => setCurrentPage(totalPages)}>
                 {totalPages}
               </IconButton>
             </>
@@ -260,12 +227,11 @@ function Users() {
           onClick={() =>
             setCurrentPage((prev) => Math.min(prev + 1, totalPages))
           }
-          disabled={currentPage === totalPages}
-        >
+          disabled={currentPage === totalPages}>
           Next
         </Button>
       </CardFooter>
-    
+
       <AddCustomBid open={open} handleOpen={handleOpen} bidId={bidId} />
     </Card>
   );

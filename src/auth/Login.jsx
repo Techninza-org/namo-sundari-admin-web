@@ -65,7 +65,7 @@ const Login = () => {
               <img src="https://sooprs.com/images/sooprs_logo.png" alt="Logo" />
             </div> */}
             <div className=" text-3xl text-indigo-800 tracking-wide ml-2 font-semibold">
-              Spotser Admin
+              NamohSundari Admin
             </div>
           </div>
         </div>

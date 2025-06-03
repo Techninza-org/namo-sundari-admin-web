@@ -19,7 +19,6 @@ import Toaster, {
   showSuccessToast,
   showErrorToast,
 } from "../../../components/Toaster";
-// import { sub } from "date-fns";
 import UpdateSubCategory from "./updateAllCetogorymodal/UpdatesSubCategory";
 import { Edit } from "lucide-react";
 
@@ -38,12 +37,10 @@ const SubCategory = () => {
 
   const token = Cookies.get("token");
 
-
   const handleEditClick = (category) => {
     setSelectedCategory(category);
     setEditDialogOpen(true);
   };
-  
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -105,12 +102,10 @@ const SubCategory = () => {
     }
     if (!subCategory) {
       showErrorToast("Subcategory name is required");
-      console.error("Subcategory name is required");
       return;
     }
     if (!image) {
       showErrorToast("Image is required");
-      console.error("Image is required");
       return;
     }
 
@@ -137,8 +132,7 @@ const SubCategory = () => {
       fetchSubCategories(); // Refresh table
       setMainCategoryId(null);
       setSubCategory("");
-      setCategoryId;
-      null;
+      setCategoryId(null);
       setImage(null);
     } catch (error) {
       showErrorToast(
@@ -170,11 +164,9 @@ const SubCategory = () => {
   };
 
   const handleDelete = async (id) => {
-    // console.log(id, "id");
     if (!window.confirm("Are you sure you want to delete this subcategory?")) {
       return;
     }
-
     if (!token) {
       console.error("No token found. User may not be authenticated.");
       return;
@@ -183,7 +175,6 @@ const SubCategory = () => {
     try {
       await axios.delete(
         `${import.meta.env.VITE_BASE_URL}/admin/delete-sub-category/${id}`,
-     
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -199,6 +190,12 @@ const SubCategory = () => {
   };
 
   const columns = [
+    {
+      key: "sno",
+      label: "S.No.",
+      render: (row) =>
+        subCategories.findIndex((item) => item.id === row.id) + 1,
+    },
     {
       key: "imgUrl",
       label: "Image",
@@ -234,14 +231,14 @@ const SubCategory = () => {
       key: "actions",
       label: "Actions",
       render: (row) => (
-       <div className="flex gap-2">
-      <button size="sm" onClick={() => handleEditClick(row)}>
-        <Edit className="h-5 w-5 text-blue-500" />
-      </button>
-      <button size="sm" onClick={() => handleDelete(row.id)}>
-        <TrashIcon className="h-5 w-5 text-red-500" />
-      </button>
-    </div>
+        <div className="flex gap-2">
+          <button size="sm" onClick={() => handleEditClick(row)}>
+            <Edit className="h-5 w-5 text-blue-500" />
+          </button>
+          <button size="sm" onClick={() => handleDelete(row.id)}>
+            <TrashIcon className="h-5 w-5 text-red-500" />
+          </button>
+        </div>
       ),
     },
   ];
@@ -264,7 +261,7 @@ const SubCategory = () => {
               value={mainCategoryId}
               onChange={setMainCategoryId}
               placeholder="Select Main Category"
-              isSearchable={true} // Enables search
+              isSearchable={true}
               className="basic-single"
             />
             <Input
@@ -298,8 +295,7 @@ const SubCategory = () => {
             <Button
               onClick={handleSubCategorySubmit}
               disabled={loadingSubmit}
-              className="w-full"
-            >
+              className="w-full">
               {loadingSubmit ? (
                 <Spinner className="h-5 w-5" />
               ) : (
@@ -325,13 +321,13 @@ const SubCategory = () => {
           </CardBody>
         </Card>
       </div>
-       <UpdateSubCategory
+      <UpdateSubCategory
         open={editDialogOpen}
         handleOpen={() => setEditDialogOpen(false)}
         categoryData={selectedCategory}
         onUpdateSuccess={() => {
           setEditDialogOpen(false);
-          fetchSubCategories() // Refresh the table after update
+          fetchSubCategories();
         }}
       />
     </>

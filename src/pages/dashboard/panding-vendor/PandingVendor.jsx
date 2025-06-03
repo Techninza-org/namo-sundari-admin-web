@@ -1,4 +1,3 @@
- 
 import { useState, useEffect, useCallback } from "react";
 import {
   Button,
@@ -26,28 +25,38 @@ function PandingVendors() {
   const token = Cookies.get("token");
   const navigate = useNavigate();
 
-  const fetchVendors = useCallback(async (page) => {
-    if (!token) return;
+  const fetchVendors = useCallback(
+    async (page) => {
+      if (!token) return;
 
-    setLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/admin/get-all-pending-vendors?page=${page}&limit=10`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
-      setVendors(data.vendors);
-      setTotalPages(data.pagination.totalPages);
-    } catch (error) {
-      console.error("Error fetching vendors:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+      setLoading(true);
+      try {
+        const { data } = await axios.get(
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/admin/get-all-pending-vendors?page=${page}&limit=10`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          }
+        );
+        // Add index to each vendor based on their position in the list
+        const vendorsWithIndex = data.vendors.map((vendor, index) => ({
+          ...vendor,
+          index: (page - 1) * 10 + index + 1,
+        }));
+        setVendors(vendorsWithIndex);
+        setTotalPages(data.pagination.totalPages);
+      } catch (error) {
+        console.error("Error fetching vendors:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
 
   useEffect(() => {
     if (token) fetchVendors(currentPage);
@@ -55,29 +64,33 @@ function PandingVendors() {
 
   const deleteVendor = async (id) => {
     try {
-      await axios.delete(`${import.meta.env.VITE_BASE_URL}/admin/delete-vendor/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(
+        `${import.meta.env.VITE_BASE_URL}/admin/delete-vendor/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setVendors(vendors.filter((vendor) => vendor.id !== id));
     } catch (error) {
       console.error("Error deleting vendor:", error);
     }
   };
 
-  // const handleEdit = (id) => {
-  //   navigate(`/vendor-detail/${id}`);
-  // };
-
-    const handleEdit = (id) => {
+  const handleEdit = (id) => {
     navigate(`/panding-vendor-detail/${id}`);
   };
-
 
   const handleOrder = (id) => {
     navigate(`/panding-vendor-detail/${id}`);
   };
 
   const columns = [
+    {
+      key: "index",
+      label: "S.No.",
+      render: (row) => <div>{row.index}</div>,
+      width: "w-12",
+    },
     {
       key: "img_url",
       label: "Profile",
@@ -146,13 +159,11 @@ function PandingVendors() {
           <div
             className={`h-2.5 w-2.5 rounded-full mr-2 ${
               row.status === "PANDING" ? "bg-green-500" : "bg-red-500"
-            }`}
-          ></div>
+            }`}></div>
           {row.status}
         </div>
       ),
       width: "w-32",
-
     },
     {
       key: "actions",
@@ -164,7 +175,6 @@ function PandingVendors() {
               <ViewIcon className="h-5 w-5 text-blue-500" />
             </button>
           </Tooltip>
-         
         </div>
       ),
       width: "w-28",
@@ -218,15 +228,17 @@ function PandingVendors() {
       <CardFooter className="flex justify-between">
         <Button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
+          disabled={currentPage === 1}>
           Previous
         </Button>
 
         <div className="flex items-center gap-2">
           {currentPage > 3 && (
             <>
-              <IconButton variant="text" size="sm" onClick={() => setCurrentPage(1)}>
+              <IconButton
+                variant="text"
+                size="sm"
+                onClick={() => setCurrentPage(1)}>
                 1
               </IconButton>
               {currentPage > 4 && <p>...</p>}
@@ -242,8 +254,7 @@ function PandingVendors() {
                 variant="text"
                 size="sm"
                 onClick={() => setCurrentPage(page)}
-                disabled={currentPage === page}
-              >
+                disabled={currentPage === page}>
                 {page}
               </IconButton>
             );
@@ -252,7 +263,10 @@ function PandingVendors() {
           {currentPage < totalPages - 2 && (
             <>
               {currentPage < totalPages - 3 && <p>...</p>}
-              <IconButton variant="text" size="sm" onClick={() => setCurrentPage(totalPages)}>
+              <IconButton
+                variant="text"
+                size="sm"
+                onClick={() => setCurrentPage(totalPages)}>
                 {totalPages}
               </IconButton>
             </>
@@ -260,9 +274,10 @@ function PandingVendors() {
         </div>
 
         <Button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-        >
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}>
           Next
         </Button>
       </CardFooter>

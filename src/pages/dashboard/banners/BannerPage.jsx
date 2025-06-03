@@ -21,7 +21,6 @@ import UpdateBannerModal from "./UpdateBannerModal";
 const BannerPage = () => {
   const token = Cookies.get("token");
   const [banners, setBanners] = useState([]);
-
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -45,7 +44,13 @@ const BannerPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setBanners(data.data);
+      // Add index to each banner item
+      setBanners(
+        data.data.map((item, index) => ({
+          ...item,
+          index: index + 1,
+        }))
+      );
     } catch (error) {
       showErrorToast(
         error.response?.data?.message || "Failed to fetch banners"
@@ -88,7 +93,6 @@ const BannerPage = () => {
     try {
       await axios.put(
         `${import.meta.env.VITE_BASE_URL}/admin/update-banner/${id}`,
-
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -115,7 +119,7 @@ const BannerPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       showSuccessToast("Banner deleted successfully");
-      fetchBanners(); // Refresh the list after deletion
+      fetchBanners();
     } catch (error) {
       console.error("Error deleting banner:", error);
       showErrorToast(
@@ -125,6 +129,11 @@ const BannerPage = () => {
   };
 
   const columns = [
+    {
+      key: "index",
+      label: "S.No.",
+      render: (row) => row.index,
+    },
     {
       key: "imgUrl",
       label: "Image",
