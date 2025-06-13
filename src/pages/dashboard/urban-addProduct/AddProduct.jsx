@@ -25,7 +25,6 @@ function AddProduct() {
     description: "",
     mainCategoryId: null,
     subCategoryId: null,
-    vendorId: null,
     variants: [
       {
         sku: "",
@@ -43,7 +42,7 @@ function AddProduct() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
-  const [vendors, setVendors] = useState([]);
+  // const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(false);
   const token = Cookies.get("token");
 
@@ -106,27 +105,7 @@ function AddProduct() {
     [token]
   );
 
-  const fetchVendors = useCallback(async () => {
-    setLoading(true);
-    if (!token) return;
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/admin/all-vendors`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setVendors(data.vendors);
-    } catch (error) {
-      console.error("Error fetching vendors:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
 
-  useEffect(() => {
-    if (token) {
-      fetchVendors();
-    }
-  }, [token, fetchVendors]);
 
   const handleProductChange = (e) => {
     const { name, value } = e.target;
@@ -149,9 +128,9 @@ function AddProduct() {
     }));
   };
 
-  const handleVendorChange = (selectedOption) => {
-    setProduct((prev) => ({ ...prev, vendorId: selectedOption }));
-  };
+  // const handleVendorChange = (selectedOption) => {
+  //   setProduct((prev) => ({ ...prev, vendorId: selectedOption }));
+  // };
 
   // Handle variant changes
   const handleVariantChange = (index, field, value) => {
@@ -256,10 +235,10 @@ function AddProduct() {
       alert("Please select a subcategory");
       return false;
     }
-    if (!product.vendorId) {
-      alert("Please select a vendor");
-      return false;
-    }
+    // if (!product.adminId) {
+    //   alert("Please select a vendor");
+    //   return false;
+    // }
 
     // Validate variants
     for (let i = 0; i < product.variants.length; i++) {
@@ -314,7 +293,7 @@ function AddProduct() {
       formData.append("description", product.description);
       formData.append("mainCategoryId", product.mainCategoryId.value);
       formData.append("subCategoryId", product.subCategoryId.value);
-      formData.append("vendorId", product.vendorId.value);
+      // formData.append("vendorid", product.adminId.value);
 
       // Add variants as JSON string
       formData.append("variants", JSON.stringify(product.variants));
@@ -346,7 +325,6 @@ function AddProduct() {
         description: "",
         mainCategoryId: null,
         subCategoryId: null,
-        vendorId: null,
         variants: [
           {
             sku: "",
@@ -504,9 +482,9 @@ function AddProduct() {
                 />
               </div>
 
-              <div className="col-span-2 md:col-span-1">
+              {/* <div className="col-span-2 md:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Vendor
+                  Admin
                 </label>
                 <Select
                   options={vendors.map((vendor) => ({
@@ -515,9 +493,9 @@ function AddProduct() {
                   }))}
                   value={product.vendorId}
                   onChange={handleVendorChange}
-                  placeholder="Select Vendor"
+                  placeholder="Select Admin"
                 />
-              </div>
+              </div> */}
 
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -538,13 +516,13 @@ function AddProduct() {
             <div className="border-t pt-6">
               <div className="flex justify-between items-center mb-4">
                 <Typography variant="h5">Product Variants</Typography>
-                {/* <Button
+                <Button
                   size="sm"
                   color="green"
                   onClick={addVariant}
                   className="flex items-center gap-1">
                   <PlusCircleIcon className="h-4 w-4" /> Add Variant
-                </Button> */}
+                </Button>
               </div>
 
               {product.variants.map((variant, variantIndex) => (

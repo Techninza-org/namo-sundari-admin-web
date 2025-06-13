@@ -56,7 +56,7 @@ const UpdateMainCategory = ({ open, handleOpen, categoryData }) => {
 
         try {
             const response = await axios.put(
-                "http://103.189.173.127:3000/api/admin/update-main-category",
+                `${import.meta.env.VITE_BASE_URL}/admin/update-main-category`,
                 data,
                 {
                     headers: {
