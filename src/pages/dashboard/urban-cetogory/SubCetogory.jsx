@@ -19,14 +19,167 @@ import Toaster, {
   showSuccessToast,
   showErrorToast,
 } from "../../../components/Toaster";
-import UpdateSubCategory from "./updateAllCetogorymodal/UpdatesSubCategory";
 import { Edit } from "lucide-react";
+import { Dialog, DialogHeader, DialogBody, DialogFooter } from "@material-tailwind/react";
+
+const UpdateSubCategoryModal = ({ open, handleOpen, categoryData, onUpdateSuccess }) => {
+  const [mainCategories, setMainCategories] = useState([]);
+  const [mainCategoryId, setMainCategoryId] = useState(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const token = Cookies.get("token");
+
+  useEffect(() => {
+    if (categoryData) {
+      setName(categoryData.name);
+      setDescription(categoryData.description);
+      setPreviewImage(`${import.meta.env.VITE_BASE_URL_IMAGE}${categoryData.imgUrl}`);
+      setMainCategoryId({
+        value: categoryData.main_category_id,
+        label: categoryData.main_category_name
+      });
+    }
+  }, [categoryData]);
+
+  useEffect(() => {
+    const fetchMainCategories = async () => {
+      try {
+        const { data } = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/admin/get-all-main-categories`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setMainCategories(data.categories);
+      } catch (error) {
+        showErrorToast(
+          error.response?.data?.message || "Failed to fetch categories"
+        );
+      }
+    };
+    fetchMainCategories();
+  }, [token]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!mainCategoryId) {
+      showErrorToast("Please select a main category");
+      return;
+    }
+    if (!name) {
+      showErrorToast("Subcategory name is required");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("id", categoryData.id);
+      formData.append("mainCategoryId", mainCategoryId.value);
+      formData.append("name", name);
+      formData.append("description", description);
+      if (image) formData.append("image", image);
+
+      await axios.put(
+        `${import.meta.env.VITE_BASE_URL}/admin/update-sub-category`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      showSuccessToast("Subcategory updated successfully");
+      onUpdateSuccess();
+    } catch (error) {
+      showErrorToast(
+        error.response?.data?.message || "Failed to update subcategory"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} handler={handleOpen} size="md">
+      <DialogHeader>Update Subcategory</DialogHeader>
+      <DialogBody>
+        <div className="space-y-4">
+          <Select
+            options={mainCategories.map((cat) => ({
+              value: cat.id,
+              label: cat.name,
+            }))}
+            value={mainCategoryId}
+            onChange={setMainCategoryId}
+            placeholder="Select Main Category"
+            isSearchable={true}
+            className="basic-single"
+          />
+          <Input
+            label="Subcategory Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <Textarea
+            label="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          <div className="flex flex-col gap-2">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full p-2 border rounded-lg"
+            />
+            {previewImage && (
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="w-32 h-32 object-cover rounded-md mx-auto"
+              />
+            )}
+          </div>
+        </div>
+      </DialogBody>
+      <DialogFooter>
+        <Button
+          variant="text"
+          color="red"
+          onClick={handleOpen}
+          className="mr-1"
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="gradient"
+          color="green"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? <Spinner className="h-4 w-4" /> : "Update"}
+        </Button>
+      </DialogFooter>
+    </Dialog>
+  );
+};
 
 const SubCategory = () => {
   const [subCategories, setSubCategories] = useState([]);
   const [mainCategories, setMainCategories] = useState([]);
   const [mainCategoryId, setMainCategoryId] = useState(null);
-  const [categoryId, setCategoryId] = useState(null);
   const [subCategory, setSubCategory] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
@@ -129,10 +282,10 @@ const SubCategory = () => {
       );
       showSuccessToast("Subcategory added successfully");
 
-      fetchSubCategories(); // Refresh table
+      fetchSubCategories();
       setMainCategoryId(null);
       setSubCategory("");
-      setCategoryId(null);
+      setDescription("");
       setImage(null);
     } catch (error) {
       showErrorToast(
@@ -208,9 +361,9 @@ const SubCategory = () => {
       ),
     },
     {
-      key: "main_category",
+      key: "main_category_name",
       label: "Main Category",
-      render: (row) => row.main_category_name,
+      render: (row) => row.mainCategoryId,
     },
     {
       key: "name",
@@ -321,7 +474,8 @@ const SubCategory = () => {
           </CardBody>
         </Card>
       </div>
-      <UpdateSubCategory
+      
+      <UpdateSubCategoryModal
         open={editDialogOpen}
         handleOpen={() => setEditDialogOpen(false)}
         categoryData={selectedCategory}
