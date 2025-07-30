@@ -18,6 +18,7 @@ import Order from "@/pages/dashboard/orders/Order";
 import { TicketIcon } from "lucide-react";
 import Transaction from "@/pages/dashboard/transaction/Transaction";
 import BannerPage from "@/pages/dashboard/banners/BannerPage";
+import ContactUsQueries from "@/pages/dashboard/Query/query"
 
 const iconClass = "w-5 h-5 text-inherit";
 
@@ -145,6 +146,17 @@ export const routes = [
           <PrivateRoute>
             {" "}
             <AddProduct />{" "}
+          </PrivateRoute>
+        ),
+      },
+
+        {
+        icon: <ArchiveBoxArrowDownIcon className={iconClass} />,
+        name: "Queries",
+        path: "/queries", // Fixed path
+        element: (
+          <PrivateRoute>
+            <ContactUsQueries />
           </PrivateRoute>
         ),
       },

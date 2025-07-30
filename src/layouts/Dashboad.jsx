@@ -14,6 +14,7 @@ import ProductOrderDetail from "@/pages/dashboard/orders/orderDetails/ProductOrd
 import UsersOrder from "@/pages/dashboard/users/userOrder";
 import VendorOrder from "@/pages/dashboard/vendor/VendorOrder";
 import Setting from "@/pages/dashboard/Setting";
+import EditProductPage from "@/pages/dashboard/urban-addProduct/EditProduct"
 
 const Dashboard = () => {
   // Local state for toggling sidebar visibility on mobile
@@ -42,6 +43,8 @@ const Dashboard = () => {
           <Route path="/product-order-detail/:id" element={<ProductOrderDetail />} />
           <Route path="/user-order/:id" element={<UsersOrder />} />
           <Route path="/vendor-order/:id" element={<VendorOrder />} />
+          <Route path="/edit-product/:id" element={<EditProductPage />} />
+
         
           <Route
             path="/order-detail/:id"
