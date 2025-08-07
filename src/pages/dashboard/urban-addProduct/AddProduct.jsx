@@ -367,6 +367,36 @@ function AddProduct() {
     }
   };
 
+
+  //toggle active/Inactive 
+
+  const toggleActive = async (id) => {
+
+    if (!confirm("Are you sure you want to toggle the status of this product?")) {
+      return;
+    }
+    setLoading(true);
+    try {
+      await axios.patch(
+        `${import.meta.env.VITE_BASE_URL}/admin/soft-delete-product/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+        ) 
+      alert("Product status updated successfully!");
+      fetchProducts();
+    } catch (error) {
+      console.error("Error updating product status:", error);
+      alert(
+        "Failed to update product status: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setLoading(false);
+    }
+  };  
+
+
+
   const columns = [
     { key: "name", label: "Name", render: (row) => row.name },
     {
@@ -387,6 +417,30 @@ function AddProduct() {
           : `₹${min.toFixed(2)} - ₹${max.toFixed(2)}`;
       },
     },
+{
+  key: "isActive",
+  label: "Active",
+  render: (row) => (
+    <label className="inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        checked={!!row.isActive}
+        onChange={() => toggleActive(row.id)}
+        className="sr-only peer"
+      />
+
+      {/* Track */}
+      <div className="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full relative transition-colors duration-300">
+        {/* Thumb */}
+        <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 transform peer-checked:translate-x-5"></div>
+      </div>
+
+      <span className="ml-2 text-sm text-gray-700">
+        {row.isActive ? "Active" : "Inactive"}
+      </span>
+    </label>
+  ),
+},
     {
       key: "actions",
       label: "Actions",
